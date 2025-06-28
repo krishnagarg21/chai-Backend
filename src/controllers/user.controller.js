@@ -225,4 +225,56 @@ const refreshAccessToken = asyncHandler(async (req, res, next) => {
 
 })
 
-export {registerUser, loginUser, logoutUser, refreshAccessToken};
+const changeCurrentPassword = asyncHandler(async (req, res, next) => {
+    const {oldPassword, newPassword} = req.body
+
+    const User = await user.findById(req.User?._id)
+
+    const isPasswordCorrect = await User.isPasswordCorrect(oldPassword);
+
+    if(!isPasswordCorrect){
+        throw new ApiError(400, "invalid old password");
+    }
+
+    //password set krna hai
+    User.password = newPassword;
+    await User.save({validateBeforeSave: false})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, {}, "Password Changed Successfully")
+    )
+})
+
+const getCurrentUser = asyncHandler(async (req, res, next) => {
+    return res
+    .status(200)
+    .json(200, req.User, "current User fetched Sucessfully")
+})
+
+const updateAccountDetails = asyncHandler(async (req, res, next) => {
+    const {fullname, email} = req.body
+
+    if(!fullname || !email){
+        throw new ApiError(400, "All are required");
+    }
+
+    //jwt se verify middleware krega
+    const User =  user.findByIdAndUpdate(
+        req.User._id,
+        {
+            $set: {
+                fullname,
+                email
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, User, "Account details Updated Successfully"))
+})
+
+export {registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails};
