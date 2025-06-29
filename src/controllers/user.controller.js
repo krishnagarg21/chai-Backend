@@ -261,7 +261,7 @@ const updateAccountDetails = asyncHandler(async (req, res, next) => {
     }
 
     //jwt se verify middleware krega
-    const User =  user.findByIdAndUpdate(
+    const User =  await user.findByIdAndUpdate(
         req.User._id,
         {
             $set: {
@@ -277,4 +277,66 @@ const updateAccountDetails = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, User, "Account details Updated Successfully"))
 })
 
-export {registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails};
+const updateUserAvatar = asyncHandler(async (req, res, next) => {
+    const avatarLocalPath = req.file?.path
+
+    if(!avatarLocalPath){
+        throw new ApiError(400, "Avatar file is missing");
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    if(!avatar.url){
+        throw new ApiError(400, "Error while uploading on cloudinary");
+    }
+
+    const User = await user.findByIdAndUpdate(
+        req.User._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        }, 
+        {new: true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, User, "Avatar Updated Successfully"))
+})
+
+const updateCoverImage = asyncHandler(async (req, res, next) => {
+    const coverImageLocalPath = req.file?.path;
+
+    if(!coverImageLocalPath){
+        throw new ApiError(400, "CoverImage is required or missing")
+    }
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+    if(!coverImage.url){
+        throw new ApiError(400, "Error while uploading coverImage on Cloudinary")
+    }
+
+    const User = await findByIdAndUpdate(
+        req.User._id,
+        {
+            $set: {coverImage: coverImage.url}
+        },
+        {new: true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        200,
+        User,
+        "coverImage Updated Successfully"
+    )
+})
+
+export {registerUser, loginUser, logoutUser,
+        refreshAccessToken, changeCurrentPassword,
+        getCurrentUser, updateAccountDetails,
+        updateUserAvatar, updateCoverImage,
+    };
