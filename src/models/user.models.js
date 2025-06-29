@@ -26,11 +26,22 @@ const userSchema = new mongoose.Schema({
         index: true
     },
     avatar: {
-        type: String, // cloudinary url will be used to store image
-        required: true
+        url: {
+            type: String, // cloudinary url will be used to store image
+            required: true
+        },
+        public_id: {
+            type: String, // cloudinary url will be used to store image
+            required: true
+        }
     },
     coverImage: {
-        type: String // // cloudinary url will be used to store image
+        url: {
+            type: String, // cloudinary url will be used to store image
+        },
+        public_id: {
+            type: String, // cloudinary url will be used to store image
+        } // // cloudinary url will be used to store image
     },
     watchHistory: [
         {
@@ -42,7 +53,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Password is Required']
     },
-    refreshTokens: {
+    refreshToken: {
         type: String
     }
 }, {timestamps: true})
